@@ -6,6 +6,8 @@ from st_cytoscape import cytoscape
 from dotenv import load_dotenv
 import os
 
+import pandas as pd
+
 load_dotenv()
 
 # # 相対インポートを絶対インポートに変更
@@ -36,19 +38,37 @@ def get_recommended_papers(input_text, n=10):
         for i, match in enumerate(papers.matches):
             if hasattr(match, 'metadata'):
                 metadata = match.metadata
+                school = metadata.get("school", "")
+                id = metadata.get("id", "")
+                # クラスラベルをcsvから取得
+                if school == "九州工業大学":
+                    df = pd.read_csv("data/予測クラス_九州工業大学.csv")
+                    class_label1 = df[df['id'] == id]['label1'].values[0] 
+                    class_label2 = df[df['id'] == id]['label2'].values[0]
+                elif school == "東京工業大学":
+                    df = pd.read_csv("data/予測クラス_東京工業大学.csv")
+                    class_label1 = df[df['id'] == id]['label1'].values[0] 
+                    class_label2 = df[df['id'] == id]['label2'].values[0]
+                else:
+                    class_label1 = None
+                    class_label2 = None
+
+
                 ret.append({
                     "title": metadata.get("title", "タイトルなし"),
                     # "authors": metadata.get("authors", ""),
                     "url": metadata.get("url", "#"),
                     "university": metadata.get("school", "不明"),
-                    "relatedness": i * 2  # スコアを関連度として使用
+                    "relatedness": i * 2,  # スコアを関連度として使用
+                    "class_label1": class_label1,
+                    "class_label2": class_label2
                 })
 
     random.shuffle(ret)  # Shuffle the papers randomly
     return ret
 
 # (2) 円形配置でノード・エッジを作成
-def build_cy_elements(input_text, papers):
+def build_cy_elements(input_text, papers, details=False):
     """
     円状にノードを配置し、'preset' レイアウトで描画できるように
     positionを持った要素リストを作る。
@@ -72,7 +92,7 @@ def build_cy_elements(input_text, papers):
 
     for i, paper in enumerate(papers):
         node_id = f"paper_{i}"
-        label_text = f"{paper['title']})"
+        label_text = f"{paper['title']}\n({paper['class_label1']},{paper['class_label2']})" if details else paper["title"]
         # label_text = f"{paper['title']}\n{paper['url']}\n({paper['university']})"
 
         # 関連度が1に近いほど中心に近い位置に
@@ -90,7 +110,9 @@ def build_cy_elements(input_text, papers):
                 "label": label_text,
                 "title": f"{paper['title']}\n{paper['url']}\n({paper['university']})",
                 "url": paper['url'],
-                "university": paper['university']
+                "university": paper['university'],
+                "class_label1": paper['class_label1'],
+                "class_label2": paper['class_label2']
                 },
             "position": {"x": x, "y": y},  # 'preset' 用の座標指定
             "style": {"background-color": color}
@@ -127,6 +149,8 @@ def main():
         st.session_state["papers"] = papers
         st.session_state["input_text"] = input_text  # 後でラベル表示に使う
 
+    details = st.checkbox("詳細情報を表示する")
+
     # ----------------------
     # セッションステートにデータがあればグラフを描画
     # ----------------------
@@ -135,7 +159,7 @@ def main():
         saved_text = st.session_state.get("input_text", "")  # 入力文のラベル用
 
         # ノード・エッジの作成
-        elements = build_cy_elements(saved_text, papers)
+        elements = build_cy_elements(saved_text, papers, details)
 
         # Cytoscape 用のスタイル設定
         stylesheet = [
@@ -203,6 +227,8 @@ def main():
                                 st.write(f"関連順位: {papers[int(node.split('_')[1])]['relatedness'] / 2 + 1}") 
                                 st.write(f"大学: {papers[int(node.split('_')[1])]['university']}")
                                 st.write(f"URL: {papers[int(node.split('_')[1])]['url']}")
+                                st.write(f"クラスラベル1: {papers[int(node.split('_')[1])]['class_label1']}")
+                                st.write(f"クラスラベル2: {papers[int(node.split('_')[1])]['class_label2']}")
                                 st.write("---")
                                 break
 

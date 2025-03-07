@@ -6,6 +6,8 @@ from st_cytoscape import cytoscape
 from dotenv import load_dotenv
 import os
 
+import pandas as pd
+
 load_dotenv()
 
 # # 相対インポートを絶対インポートに変更
@@ -36,12 +38,25 @@ def get_recommended_papers(input_text, n=10):
         for i, match in enumerate(papers.matches):
             if hasattr(match, 'metadata'):
                 metadata = match.metadata
+                school = metadata.get("school", "")
+                id = metadata.get("id", "")
+                # クラスラベルをcsvから取得
+                if school == "九州工業大学":
+                    df = pd.read_csv("data/予測ラベル_九州工業大学.csv")
+                    class_label = df[df['id'] == id]['label1'].values[0] 
+                elif school == "東京工業大学":
+                    df = pd.read_csv("data/予測ラベル_東京工業大学.csv")
+                    class_label = df[df['id'] == id]['label1'].values[0] 
+                else:
+                    class_label = None
+
                 ret.append({
                     "title": metadata.get("title", "タイトルなし"),
                     # "authors": metadata.get("authors", ""),
                     "url": metadata.get("url", "#"),
                     "university": metadata.get("school", "不明"),
-                    "relatedness": i * 2  # スコアを関連度として使用
+                    "relatedness": i * 2,  # スコアを関連度として使用
+                    "class_label": class_label
                 })
 
     random.shuffle(ret)  # Shuffle the papers randomly
@@ -90,7 +105,8 @@ def build_cy_elements(input_text, papers):
                 "label": label_text,
                 "title": f"{paper['title']}\n{paper['url']}\n({paper['university']})",
                 "url": paper['url'],
-                "university": paper['university']
+                "university": paper['university'],
+                "class_label": paper['class_label']
                 },
             "position": {"x": x, "y": y},  # 'preset' 用の座標指定
             "style": {"background-color": color}

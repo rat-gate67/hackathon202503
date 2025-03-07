@@ -132,7 +132,7 @@ def build_cy_elements(input_text, papers, details=False):
     return elements
 
 def main():
-    st.title("論文レコメンド＆可視化デモ (継続表示対応)")
+    st.title("論文レコメンド＆可視化アプリ")
 
     st.write("文章を入力→「検索」ボタンを押すと、その内容に関連する論文を円状に可視化します。")
     input_text = st.text_area("文章を入力:", value="", placeholder="ここに文章を入力...")
@@ -140,16 +140,24 @@ def main():
     # ----------------------
     # 検索ボタンで論文情報を取得・保存
     # ----------------------
-    with st.expander("オプション設定"):
-        near_n = st.slider("検索する論文数:", min_value=1, max_value=50, value=10)
-        boost = st.slider("検索のboost:", min_value=1, max_value=5, value=1)
-    if st.button("検索"):
-        papers = get_recommended_papers(input_text*boost, near_n)
-        # セッションステートに保存
-        st.session_state["papers"] = papers
-        st.session_state["input_text"] = input_text  # 後でラベル表示に使う
+    # Create columns for horizontal layout
+    opt_col, detail_col, search_col = st.columns([3, 1, 1])
+    
+    with opt_col:
+        with st.expander("オプション設定"):
+            near_n = st.slider("検索する論文数:", min_value=1, max_value=50, value=10)
+            boost = st.slider("検索のboost:", min_value=1, max_value=5, value=1)
+    
+    with detail_col:
+        details = st.checkbox("詳細情報を表示する")
+    
+    with search_col:
+        if st.button("検索"):
+            papers = get_recommended_papers(input_text*boost, near_n)
+            # セッションステートに保存
+            st.session_state["papers"] = papers
+            st.session_state["input_text"] = input_text  # 後でラベル表示に使う
 
-    details = st.checkbox("詳細情報を表示する")
 
     # ----------------------
     # セッションステートにデータがあればグラフを描画

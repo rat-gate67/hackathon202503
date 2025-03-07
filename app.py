@@ -111,7 +111,8 @@ def build_cy_elements(input_text, papers):
                 "title": f"{paper['title']}\n{paper['url']}\n({paper['university']})",
                 "url": paper['url'],
                 "university": paper['university'],
-                "class_label": paper['class_label']
+                "class_label1": paper['class_label1'],
+                "class_label2": paper['class_label2']
                 },
             "position": {"x": x, "y": y},  # 'preset' 用の座標指定
             "style": {"background-color": color}

@@ -42,10 +42,10 @@ def get_recommended_papers(input_text, n=10):
                 id = metadata.get("id", "")
                 # クラスラベルをcsvから取得
                 if school == "九州工業大学":
-                    df = pd.read_csv("data/予測ラベル_九州工業大学.csv")
+                    df = pd.read_csv("data/予測クラス_九州工業大学.csv.csv")
                     class_label = df[df['id'] == id]['label1'].values[0] 
                 elif school == "東京工業大学":
-                    df = pd.read_csv("data/予測ラベル_東京工業大学.csv")
+                    df = pd.read_csv("data/予測クラス_東京工業大学.csv")
                     class_label = df[df['id'] == id]['label1'].values[0] 
                 else:
                     class_label = None

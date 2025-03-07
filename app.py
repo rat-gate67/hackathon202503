@@ -87,7 +87,7 @@ def build_cy_elements(input_text, papers):
 
     for i, paper in enumerate(papers):
         node_id = f"paper_{i}"
-        label_text = f"{paper['title']})"
+        label_text = f"{paper['title']}\n({paper['class_label']})"
         # label_text = f"{paper['title']}\n{paper['url']}\n({paper['university']})"
 
         # 関連度が1に近いほど中心に近い位置に

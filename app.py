@@ -68,7 +68,7 @@ def get_recommended_papers(input_text, n=10):
     return ret
 
 # (2) 円形配置でノード・エッジを作成
-def build_cy_elements(input_text, papers):
+def build_cy_elements(input_text, papers, details=False):
     """
     円状にノードを配置し、'preset' レイアウトで描画できるように
     positionを持った要素リストを作る。
@@ -92,7 +92,7 @@ def build_cy_elements(input_text, papers):
 
     for i, paper in enumerate(papers):
         node_id = f"paper_{i}"
-        label_text = f"{paper['title']}\n({paper['class_label1']},{paper['class_label2']})"
+        label_text = f"{paper['title']}\n({paper['class_label1']},{paper['class_label2']})" if details else paper["title"]
         # label_text = f"{paper['title']}\n{paper['url']}\n({paper['university']})"
 
         # 関連度が1に近いほど中心に近い位置に
@@ -149,6 +149,8 @@ def main():
         st.session_state["papers"] = papers
         st.session_state["input_text"] = input_text  # 後でラベル表示に使う
 
+    details = st.checkbox("詳細情報を表示する")
+
     # ----------------------
     # セッションステートにデータがあればグラフを描画
     # ----------------------
@@ -157,7 +159,7 @@ def main():
         saved_text = st.session_state.get("input_text", "")  # 入力文のラベル用
 
         # ノード・エッジの作成
-        elements = build_cy_elements(saved_text, papers)
+        elements = build_cy_elements(saved_text, papers, details)
 
         # Cytoscape 用のスタイル設定
         stylesheet = [
@@ -225,6 +227,8 @@ def main():
                                 st.write(f"関連順位: {papers[int(node.split('_')[1])]['relatedness'] / 2 + 1}") 
                                 st.write(f"大学: {papers[int(node.split('_')[1])]['university']}")
                                 st.write(f"URL: {papers[int(node.split('_')[1])]['url']}")
+                                st.write(f"クラスラベル1: {papers[int(node.split('_')[1])]['class_label1']}")
+                                st.write(f"クラスラベル2: {papers[int(node.split('_')[1])]['class_label2']}")
                                 st.write("---")
                                 break
 

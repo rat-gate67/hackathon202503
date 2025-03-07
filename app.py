@@ -43,12 +43,16 @@ def get_recommended_papers(input_text, n=10):
                 # クラスラベルをcsvから取得
                 if school == "九州工業大学":
                     df = pd.read_csv("data/予測クラス_九州工業大学.csv")
-                    class_label = df[df['id'] == id]['label1'].values[0] 
+                    class_label1 = df[df['id'] == id]['label1'].values[0] 
+                    class_label2 = df[df['id'] == id]['label2'].values[0]
                 elif school == "東京工業大学":
                     df = pd.read_csv("data/予測クラス_東京工業大学.csv")
-                    class_label = df[df['id'] == id]['label1'].values[0] 
+                    class_label1 = df[df['id'] == id]['label1'].values[0] 
+                    class_label2 = df[df['id'] == id]['label2'].values[0]
                 else:
-                    class_label = None
+                    class_label1 = None
+                    class_label2 = None
+
 
                 ret.append({
                     "title": metadata.get("title", "タイトルなし"),
@@ -56,7 +60,8 @@ def get_recommended_papers(input_text, n=10):
                     "url": metadata.get("url", "#"),
                     "university": metadata.get("school", "不明"),
                     "relatedness": i * 2,  # スコアを関連度として使用
-                    "class_label": class_label
+                    "class_label1": class_label1,
+                    "class_label2": class_label2
                 })
 
     random.shuffle(ret)  # Shuffle the papers randomly
@@ -87,7 +92,7 @@ def build_cy_elements(input_text, papers):
 
     for i, paper in enumerate(papers):
         node_id = f"paper_{i}"
-        label_text = f"{paper['title']}\n({paper['class_label']})"
+        label_text = f"{paper['title']}\n({paper['class_label1']},{paper['class_label2']})"
         # label_text = f"{paper['title']}\n{paper['url']}\n({paper['university']})"
 
         # 関連度が1に近いほど中心に近い位置に
